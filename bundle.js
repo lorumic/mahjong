@@ -6888,6 +6888,10 @@
 
       let cancel = () => this.ignoreDiscard(tile, interrupt, resolve);
 
+      let { lookout } = this.player.tilesNeeded();
+      let claimList = lookout[tile.getTileFace()];
+      let mayWin = claimList && claimList.some(type => parseInt(type) === CLAIM$1.WIN);
+
       console.debug(this.player.id, tile, mayChow, this, this.canPung(tile));
 
       modal.choiceInput("What kind of claim are you making?", [
@@ -6897,13 +6901,13 @@
         (mayChow && this.canChow(tile, CLAIM$1.CHOW3)) ? { label: "Chow (▯▯▮)", value: CLAIM$1.CHOW3 } : false,
         this.canPung(tile) ? { label: "Pung", value: CLAIM$1.PUNG } : false,
         this.canKong(tile) ? { label: "Kong", value: CLAIM$1.KONG } : false,
-        { label: "Win", value: CLAIM$1.WIN }, // Let's not pre-filter this one
+        mayWin ? { label: "Win", value: CLAIM$1.WIN } : false,
       ], result => {
         tile.unmark('highlight');
         tile.unmark('suggestion');
         tile.unmark('selectable');
         this.removeAllListeners();
-        if (result === CLAIM$1.WIN) return this.spawnWinDialog(tile, resolve, cancel);
+        if (result === CLAIM$1.WIN) return this.spawnWinDialog(tile, claimList, resolve, cancel);
         resolve({ claimtype: result });
       }, cancel);
     }
@@ -6949,26 +6953,20 @@
      * that allows tlistenForClhe user to claim a discard for the purposes
      * of declaring a win.
      */
-    spawnWinDialog(discard, resolve, cancel) {
+    spawnWinDialog(discard, claimList, resolve, cancel) {
       // determine how this player could actually win on this tile.
-      let { lookout } = this.player.tilesNeeded();
-
       let winOptions = { pair: false, chow: false, pung: false };
-      let claimList = lookout[discard.getTileFace()];
 
-      if (claimList) {
-        claimList.forEach(type => {
-          if (parseInt(type) === CLAIM$1.WIN) {
-            let subtype = parseInt(type.split('s')[1]);
-            if (subtype === CLAIM$1.PAIR) winOptions.pair = true;
-            if (subtype >= CLAIM$1.CHOW && subtype < CLAIM$1.PUNG) winOptions.chow = true;
-            if (subtype >= CLAIM$1.PUNG) winOptions.pung = true;
-          }
-        });
-      }
+      claimList.forEach(type => {
+        if (parseInt(type) === CLAIM$1.WIN) {
+          let subtype = parseInt(type.split('s')[1]);
+          if (subtype === CLAIM$1.PAIR) winOptions.pair = true;
+          if (subtype >= CLAIM$1.CHOW && subtype < CLAIM$1.PUNG) winOptions.chow = true;
+          if (subtype >= CLAIM$1.PUNG) winOptions.pung = true;
+        }
+      });
 
       let options = [
-        { label: "Actually, it doesn't", value: CLAIM$1.IGNORE },
         winOptions.pair ? { label: "Pair", value: CLAIM$1.PAIR } : false,
         winOptions.chow && this.canChow(discard, CLAIM$1.CHOW1) ? { label: "Chow (▮▯▯)", value: CLAIM$1.CHOW1 } : false,
         winOptions.chow && this.canChow(discard, CLAIM$1.CHOW2) ? { label: "Chow (▯▮▯)", value: CLAIM$1.CHOW2 } : false,
@@ -6977,8 +6975,7 @@
       ];
 
       modal.choiceInput("How does this tile make you win?", options, result => {
-        if (result === CLAIM$1.IGNORE) resolve({ claimtype: CLAIM$1.IGNORE });
-        else resolve({ claimtype: CLAIM$1.WIN, wintype: result });
+        resolve({ claimtype: CLAIM$1.WIN, wintype: result });
       }, cancel);
     }
   }

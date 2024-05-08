@@ -33,20 +33,20 @@
 }
 
 .board .corner.wall.data {
-  right: 5rem;
-  top: calc(var(--ph) * 1.5);
+  right: 7.5rem;
+  top: calc(var(--ph) * 2.2);
 }
 
 .board .corner.settings {
   cursor: pointer;
   color: var(--board-secondary-text-color);
-  left: 2rem;
-  bottom: calc(var(--ph) * 1.5);
+  left: 3.5rem;
+  bottom: calc(var(--ph) * 2.2);
 }
 
 .board .corner.theming {
   cursor: pointer;
   color: var(--board-secondary-text-color);
-  right: 5rem;
-  bottom: calc(var(--ph) * 1.5);
+  right: 7.5rem;
+  bottom: calc(var(--ph) * 2.2);
 }

@@ -8,10 +8,10 @@
   font-family: Helvetica, sans-serif;
 
   /* visually constrain to discard panel */
-  top: calc(var(--ph) + var(--main-play-border));
-  left: calc(var(--ph) + var(--main-play-border));
-  right: calc(var(--ph) + var(--main-play-border));
-  bottom: calc(var(--ph) + var(--main-play-border));
+  top: calc(var(--ph) + var(--main-play-border) + 2em);
+  left: calc(var(--ph) + var(--main-play-border) + 2em);
+  right: calc(var(--ph) + var(--main-play-border) + 2em);
+  bottom: calc(var(--ph) + var(--main-play-border) + 2em);
 }
 
 .modal .panel {

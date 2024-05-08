@@ -3,10 +3,10 @@
 .discards {
   --d: calc(var(--w) - calc(2 * var(--ph)));
   position: absolute;
-  top: var(--ph);
+  top: 100px;
   left: var(--ph);
-  width: var(--d);
-  height: var(--d);
+  width: 520px;
+  height: 520px;
   background-color: var(--discard-background);
   background-image: url('../../img/background/opacity-05.png');
   background-size: 100% 100%;

@@ -5,7 +5,7 @@
   --fade-speed: 0.5s;
   --wotr-dim: 8em;
   --inner-dim: calc(var(--wotr-dim) / 6);
-  --offset: -11.5em;
+  --offset: -9em;
 
   font-family: Hiragina, 'MS Mincho', sans-serif;
   border: 3px solid var(--windicator-border);

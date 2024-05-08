@@ -1,3 +1,119 @@
+/* i really want this to be global */
+
+.player.waiting { background: linear-gradient(rgba(0,0,0,0), orange) !important; }
+.player.winner { background: linear-gradient(rgba(0,0,0,0), lawngreen) !important; }
+.player.game-winner { background: linear-gradient(rgba(0,0,0,0),lawngreen) !important; }
+
+.board {
+  background: url("../../img/background/WoodsyClassicLightTable.svg") !important;
+  background-size:720px 720px !important;
+
+}
+
+.discards{
+   background-size: 500px 500px !important;
+   background-repeat:no-repeat !important;
+   background-position:center !important;
+  }
+
+:root {
+  --board-background: transparent !important;
+  --discard-background: transparent !important;
+  --player-background: transparent !important;
+}
+
+
+[tile] {
+  border:0 !important;
+}
+
+.player [tile] {
+  box-shadow:
+  0px -5px 1px #aaaaaa,
+  0px -5px 1px rgba(16,16,16,1),
+  0px -5px 1px rgba(16,16,16,1),
+  0px -6px 2px #000000,
+  inset 0px 0px 2px rgba(0,0,0,0.5) !important;
+}
+
+.player {
+  margin: 0 !important;
+  width: 612px !important;
+}
+
+game-tile.latest {
+  box-shadow:
+  0px -5px 1px #aaaaaa,
+  0px -5px 1px rgba(16,16,16,1),
+  0px -5px 1px rgba(16,16,16,1),
+  0px -6px 2px #000000,
+  inset 0px 0px 2px rgba(0,0,0,0.5) !important;
+}
+
+game-tile.selectable.highlight {
+     box-shadow:
+     0px -5px 1px #aaaaaa,
+     0px -5px 1px rgba(16,16,16,1),
+     0px -5px 1px rgba(16,16,16,1),
+     0px -6px 2px #000000,
+     inset 0px 0px 2px rgba(0,0,0,0.5) !important;
+}
+
+.discards game-tile.selectable {
+  box-shadow: 
+  0px 3px 1px #aaaaaa,
+  0px 3px 1px rgba(16,16,16,1),
+  0px 3px 1px rgba(16,16,16,1),
+  0px 4px 2px #000000,
+  inset 0px 0px 2px rgba(0,0,0,0.5) !important;
+}
+
+.discards game-tile.selectable.highlight {
+  box-shadow: 
+  0px 3px 1px #aaaaaa,
+  0px 3px 1px rgba(16,16,16,1),
+  0px 3px 1px rgba(16,16,16,1),
+  0px 4px 2px #000000,
+  inset 0px 0px 2px rgba(0,0,0,0.5) !important;
+}
+
+.discards game-tile.selectable.highlight.suggestion {
+  box-shadow: 
+  0px 3px 1px #aaaaaa,
+  0px 3px 1px rgba(16,16,16,1),
+  0px 3px 1px rgba(16,16,16,1),
+  0px 4px 2px #000000,
+  inset 0px 0px 2px rgba(0,0,0,0.5) !important;
+}
+
+game-tile.discard {
+  box-shadow: 
+  0px 3px 1px #aaaaaa,
+  0px 3px 1px rgba(16,16,16,1),
+  0px 3px 1px rgba(16,16,16,1),
+  0px 4px 2px #000000,
+  inset 0px 0px 2px rgba(0,0,0,0.5) !important;
+}
+game-tile + [tile] {
+  margin-left: 1px !important;
+}
+
+[tile][locked] {
+  margin-top: -80px !important;
+}
+
+[tile][bonus] {
+  margin-top: -80px !important;
+}
+
+[tile][concealed] {
+  margin-top: -80px !important;
+}
+
+.discards {
+  margin-left: 36px !important;
+}
+
 [tile] {
   display: inline-block;
 
@@ -28,7 +144,7 @@
 }
 
 game-tile.latest {
-  border-bottom: 3px solid var(--tile-latest);
+  border-bottom: 3px solid var(--tile-latest) !important;
 }
 
 game-tile.selectable.highlight {
@@ -38,27 +154,31 @@ game-tile.selectable.highlight {
 }
 
 .discards game-tile.selectable {
-  box-shadow: 0 0 3px 3px var(--tile-selectable);
+  box-shadow: 0 0 3px 3px var(--tile-selectable) !important;
 }
 
 .discards game-tile.selectable.highlight {
-  box-shadow: 0 0 3px 3px var(--tile-highlight);
+  box-shadow: 0 0 3px 3px var(--tile-highlight) !important;
 }
 
 .discards game-tile.selectable.highlight.suggestion {
-  box-shadow: 0 0 3px 3px var(--tile-suggestion-highlight);
+  box-shadow: 0 0 3px 3px var(--tile-suggestion-highlight) !important;
 }
 
 game-tile.suggestion {
-  border-top: 3px solid var(--tile-suggestion);
+  border-top: 3px solid var(--tile-suggestion) !important;
 }
 
 game-tile.discard {
-  box-shadow: 0 0 3px 0 var(--tile-discard);
+  box-shadow: 0 0 3px 0 var(--tile-discard) !important;
 }
 
 game-tile + [tile] {
   margin-left: 1px;
+}
+
+game-tile {
+  box-sizing: border-box !important;
 }
 
 [tile="-1"] { content: "unknown"; background-image: url("../../img/tiles/small/concealed.png"); box-shadow: -1px -1px 1px 0 inset #0d450e; }

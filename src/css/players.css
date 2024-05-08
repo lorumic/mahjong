@@ -44,6 +44,7 @@
   position: absolute;
   z-index: 0;
   right: var(--sep);
+  bottom: 4em;
 }
 
 .finished .player::after {

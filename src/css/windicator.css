@@ -20,6 +20,7 @@
   box-shadow: 3px 3px 13px 3px var(--windicator-shadow);
   margin-top: var(--offset);
   margin-left: var(--offset);
+  pointer-events: none;
 }
 
 .finished .windicator {

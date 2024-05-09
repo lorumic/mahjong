@@ -19,7 +19,7 @@
     */
   function Random(seed) {
     this._seed = seed ? seed % 2147483647 : random(2147483647);
-    console.log(`using initial random seed ${this._seed}`);
+    //console.log(`using initial random seed ${this._seed}`);
     if (this._seed <= 0) this._seed += 2147483646;
   }
 
@@ -1167,8 +1167,8 @@
 
       if (!finalScore) {
         disclosure.locked = disclosure.locked.map(set => set.map(tile => tile.values ? tile.values.tile : tile));
-        console.log(disclosure);
-        console.log(possibleScores);
+        //console.log(disclosure);
+        //console.log(possibleScores);
         throw new Error("no score could be computed");
       }
 
@@ -1748,6 +1748,26 @@
   const noop = () => {};
   const __console_debug = console.debug.bind(console);
 
+  const updateCurrentConfig = () => {
+    const fromStorage = JSON.parse(localStorage.getItem("mahjongConfig") || "{}");
+    for (var key in DEFAULT_CONFIG) {
+      if (!(key in fromStorage)) {
+        fromStorage[key] = DEFAULT_CONFIG[key];
+      }
+    }
+    globalThis.currentConfig = fromStorage;
+
+    for (const [key, value] of Object.entries(globalThis.currentConfig)) {
+      if (value === "true") globalThis.currentConfig[key] = true;
+      if (value === "false") globalThis.currentConfig[key] = false;
+      if (value == parseFloat(value)) globalThis.currentConfig[key] = parseFloat(value); // note: == rather than ===
+    }
+
+    for (var key in globalThis.currentConfig) {
+      config[key] = globalThis.currentConfig[key];
+    }
+  }
+
   const DEFAULT_CONFIG = {
     // This flag needs no explanation
     DEBUG: false,
@@ -1844,33 +1864,7 @@
     WRITE_GAME_LOG: false,
   };
 
-  const fromStorage = JSON.parse(localStorage.getItem("mahjongConfig") || "{}");
-  let currentConfig = Object.assign(fromStorage, DEFAULT_CONFIG);
-
-  // runtime overrides?
-  let queryArgs = globalThis.location.search.replace(
-    /([a-z_]+)=/g,
-    (a, b) => b.toUpperCase() + "="
-  );
-
-  let params = new URLSearchParams(queryArgs);
-  let urlConfig = Object.fromEntries(params.entries());
-
-  currentConfig = Object.assign(currentConfig, urlConfig);
-
-  for (const [key, value] of Object.entries(currentConfig)) {
-    if (value === "true") currentConfig[key] = true;
-    if (value === "false") currentConfig[key] = false;
-    if (value == parseFloat(value)) currentConfig[key] = parseFloat(value); // note: == rather than ===
-  }
-
-
-  console.log("playing with", currentConfig);
-
-  if (currentConfig.WALL_HACK || currentConfig.PLAY_IMMEDIATELY) {
-    currentConfig.FORCE_OPEN_BOT_PLAY = true;
-    currentConfig.USE_SOUND = true;
-  }
+  globalThis.currentConfig = {};
 
   // Constants used during play, for determining
   // claim types on discarded tiles.
@@ -2012,10 +2006,10 @@
             config[key] = value;
             if (key === `DEBUG`) {
               if (value) {
-                console.log("activating");
+                //console.log("activating");
                 console.debug = __console_debug;
               } else {
-                console.log("deactivating");
+                //console.log("deactivating");
                 console.debug = noop;
               }
             }
@@ -2028,8 +2022,8 @@
 
       // The pseudo-random number generator used by
       // any code that needs to randomise data.
-      PRNG: new Random(currentConfig.SEED),
-      DEBUG: currentConfig.DEBUG,
+      PRNG: new Random(globalThis.currentConfig.SEED),
+      DEBUG: globalThis.currentConfig.DEBUG,
       log: noop,
       flushLog: noop,
 
@@ -2106,11 +2100,13 @@
         return diff;
       },
     },
-    currentConfig
+    globalThis.currentConfig
   );
 
+  updateCurrentConfig();
+
   // bind console.debug correctly.
-  config.set({ DEBUG: currentConfig.DEBUG });
+  config.set({ DEBUG: globalThis.currentConfig.DEBUG });
 
   config.log = playlog.log;
   config.flushLog = playlog.flush;
@@ -2790,26 +2786,38 @@
 
       form.addEventListener(`submit`, (evt) => {
         evt.preventDefault();
-        let suffix = options
-          .filter((e) => e.value != e.default_value)
-          .map((e) => `${e.key}=${e.value}`)
-          .join("&");
-          globalThis.location.search = suffix ? `?${suffix}` : ``;
+        let mahjongConfig = {};
+        options.forEach((entry) => {
+          if (!entry.key) return;
+          let value = entry.value;
+          if (entry.value === "true") value = true;
+          if (entry.value === "false") value = false;
+          mahjongConfig[entry.key.toUpperCase()] = value;
+        });
+        localStorage.setItem("mahjongConfig", JSON.stringify(mahjongConfig));
+        updateCurrentConfig();
+        document.getElementById("okButton").click();
       });
 
       let ok = table.querySelector(`#ok`);
       panel.gainFocus = () => ok.focus();
 
       let reset = table.querySelector(`#reset`);
-      reset.addEventListener("click", (evt) => (globalThis.location.search = ""));
+      reset.addEventListener("click", (evt) => {
+        localStorage.setItem("mahjongConfig", JSON.stringify(DEFAULT_CONFIG));
+        updateCurrentConfig();
+        document.getElementById("okButton").click();
+      });
     }
 
     getOptions() {
+      const disabled = globalThis.currentGame !== undefined;
       const options = [
         {
           label: `Rules`,
           key: `rules`,
           options: [...Ruleset.getRulesetNames()],
+          disabled,
         },
         {
           // basic boolean flags:
@@ -2818,6 +2826,7 @@
           label: `🀄 Always show everyone's tiles`,
           key: `force_open_bot_play`,
           toggle: true,
+          disabled,
         },
         {
           label: `✨ Highlight claimable discards`,
@@ -2846,6 +2855,7 @@
           label: `⏸️ Pause game unless focused`,
           key: `pause_on_blur`,
           toggle: true,
+          disabled,
         },
         {
           label: `💻 Turn on debug mode`,
@@ -3119,7 +3129,7 @@
           const css = [];
           const tileWidth = img.width / 9;
           const tileHeight = img.height / 5;
-          console.log(img.width, img.height, tileWidth, tileHeight);
+          //console.log(img.width, img.height, tileWidth, tileHeight);
           const canvas = document.createElement(`canvas`);
           canvas.width = img.width;
           canvas.height = img.height;
@@ -3555,7 +3565,7 @@
 
       options.forEach((entry) => {
         const { label, button_label, key, value, default_value } = entry;
-        const { toggle, type, evtType, handler, debug_only } = entry;
+        const { toggle, type, evtType, handler, debug_only, disabled } = entry;
         let options = entry.options;
         let row;
 
@@ -3578,7 +3588,7 @@
           options = toggle ? [true, false] : options;
 
           field = `
-          <select class="${key} field">
+          <select class="${key} field"${disabled? " disabled" : ""}>
             ${options.map(
               (opt) =>
                 `<option value="${opt}"${
@@ -3628,7 +3638,7 @@
         });
 
         input.addEventListener(`input`, () => {
-          console.log(input.value, default_value);
+          //console.log(input.value, default_value);
           if (input.value !== default_value.toString()) {
             input.parentNode.classList.add(`custom`);
           } else {
@@ -3669,6 +3679,7 @@
      */
     addFooter(panel, modalLabel = "OK", resolve = () => {}, botDismissible) {
       let ok = document.createElement("button");
+      ok.id = "okButton";
       ok.textContent = modalLabel;
       ok.addEventListener("click", () => {
         this.close([
@@ -3729,6 +3740,7 @@
      */
     pickPlaySettings() {
       this.reveal();
+      this.settings = new SettingsModal(this);
       this.settings.show();
     }
 
@@ -4756,7 +4768,7 @@
       if (config.PRNG.nextFloat() < this.chickenThreshold) {
         this.chicken = true;
         let notice = `player ${this.player.id} will be going for chicken hands at ${tilesRemaining} tiles left!`;
-        console.log(notice);
+        //console.log(notice);
         config.log(notice);
       }
     }
@@ -6518,7 +6530,7 @@
      * (discardable) tiles in the player's tilebank.
      */
     addMouseEventsToTile(tile, suggestions, resolve) {
-      console.log(tile, suggestions);
+      //console.log(tile, suggestions);
       this.listen(tile, "mouseover", evt => this.highlightTile(tile));
       this.listen(tile, "click", evt => this.discardCurrentHighlightedTile(suggestions, resolve));
       this.listen(tile, "mousedown", evt => this.initiateLongPress(evt, suggestions, resolve));
@@ -6591,7 +6603,7 @@
       if (evt.type === 'mousedown' && evt.which !== 1) return;
       if (!this.longPressTimeout) {
         this.longPressTimeout = setTimeout(() => {
-          console.log('removing document mouseup/touchend');
+          //console.log('removing document mouseup/touchend');
           releaseEvents.forEach(event => this.removeListeners(document, event));
           this.cancelLongPress();
           let restoreClickHandling = this.removeListeners(evt.target, "click");
@@ -7280,13 +7292,13 @@
       let pre = result.draw ? 'Res' : 'S';
       let logNotice = `${pre}tarting hand ${this.hand}.`;
       let style = `color: red; font-weight: bold; font-size: 120%; border-bottom: 1px solid black;`;
-      console.log(`\n${ (typeof process === "undefined") ? `%c` : `` }${logNotice}`, (typeof process === "undefined") ? style : ``);
+      //console.log(`\n${ (typeof process === "undefined") ? `%c` : `` }${logNotice}`, (typeof process === "undefined") ? style : ``);
       config.log(`\n${logNotice}`);
 
       if (this.fixValues) { this.fixValues(); this.fixValues=()=>{}; }
 
       logNotice = `this.hand=${this.hand}; this.draws=${this.draws}; config.PRNG.seed(${config.PRNG.seed()}); this.wind=${this.wind}; this.windOfTheRound=${this.windOfTheRound};`;
-      console.log(logNotice);
+      //console.log(logNotice);
       config.log(logNotice);
 
       this.wall.reset();
@@ -7374,6 +7386,12 @@
       await Promise.all(players.map(p => {
         return new Promise(ready => p.handWillStart(redraw, ready))
       }));
+
+      if (!noSleepEnabled) {
+        var noSleep = new NoSleep();
+        noSleep.enable();
+        noSleepEnabled = true;
+      }
 
       // at this point, the game can be said to have started, but
       // we want to make sure that any player that, at the start
@@ -7571,7 +7589,7 @@
 
       // No claims: have we run out of tiles?
       if (wall.dead) {
-        console.log(`Hand ${hand} is a draw.`);
+        //console.log(`Hand ${hand} is a draw.`);
 
         await players.asyncAll(p => p.endOfHand());
 
@@ -7650,7 +7668,7 @@
 
       let play_length = (Date.now() - this.PLAY_START);
       let message = `Player ${currentPlayerId} wins hand ${hand}! (hand took ${play_length}ms)`;
-      console.log(message);
+      //console.log(message);
       config.log(message);
 
       // Let everyone know what everyone had. It's the nice thing to do.
@@ -7974,14 +7992,8 @@
     if (config.PLAY_IMMEDIATELY) play();
     else offerChoice();
 
-    var noSleep = new NoSleep();
-
     // Forced bot play
     function play() {
-      if (!noSleepEnabled) {
-        noSleep.enable();
-        noSleepEnabled = true;
-      }
       let manager = new GameManager();
       let game = manager.newGame();
       game.startGame(() => {

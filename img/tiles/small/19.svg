@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="105.83mm" height="148.17mm" version="1.1" viewBox="0 0 105.83 148.17" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+ <g transform="translate(-52.162 -74.417)">
+  <rect x="52.162" y="74.417" width="105.83" height="148.17" fill="#f9f9f9"/>
+  <g transform="matrix(.26458 0 0 .26458 65.39 -77.209)">
+   <g transform="matrix(.76584 0 0 .76584 512.08 490.48)">
+    <circle cx="-472.78" cy="341.26" r="107.57" fill="#fff" stroke="#030" stroke-linejoin="round" stroke-width="17.217"/>
+    <circle cx="-472.78" cy="341.63" r="87.813" fill="#030"/>
+    <g id="g4247" transform="matrix(.10477 0 0 .085875 -506.33 359.11)">
+     <path d="m-93.329-74.125a163.92 163.92 0 0 1-224.6-13.081 163.92 163.92 0 0 1 0-224.98 163.92 163.92 0 0 1 224.6-13.081" fill="none" stroke="#fff" stroke-linecap="round" stroke-linejoin="round" stroke-width="125.71"/>
+    </g>
+    <use id="use4252" transform="rotate(-60 -472.86 342.07)" width="100%" height="100%" xlink:href="#g4247"/>
+    <use id="use4254" transform="rotate(-60 -473.89 342.72)" width="100%" height="100%" xlink:href="#use4252"/>
+    <use id="use4256" transform="rotate(-60 -473.89 342.72)" width="100%" height="100%" xlink:href="#use4254"/>
+    <use id="use4258" transform="rotate(-60 -473.89 342.72)" width="100%" height="100%" xlink:href="#use4256"/>
+    <use transform="rotate(-60 -473.89 342.72)" width="100%" height="100%" xlink:href="#use4258"/>
+    <circle cx="-472.93" cy="341.52" r="18.188" fill="none" stroke="#fff" stroke-linejoin="round" stroke-width="12.286"/>
+   </g>
+   <g transform="matrix(.76584 0 0 .76584 512.08 692.98)">
+    <circle cx="-472.78" cy="341.26" r="107.57" fill="#fff" stroke="#002" stroke-linejoin="round" stroke-width="17.217"/>
+    <circle cx="-472.78" cy="341.63" r="87.813" fill="#002"/>
+    <g transform="matrix(.10477 0 0 .085875 -506.33 359.11)">
+     <path d="m-93.329-74.125a163.92 163.92 0 0 1-224.6-13.081 163.92 163.92 0 0 1 0-224.98 163.92 163.92 0 0 1 224.6-13.081" fill="none" stroke="#fff" stroke-linecap="round" stroke-linejoin="round" stroke-width="125.71"/>
+    </g>
+    <use transform="rotate(-60 -472.86 342.07)" width="100%" height="100%" xlink:href="#g4247"/>
+    <use transform="rotate(-60 -473.89 342.72)" width="100%" height="100%" xlink:href="#use4252"/>
+    <use transform="rotate(-60 -473.89 342.72)" width="100%" height="100%" xlink:href="#use4254"/>
+    <use transform="rotate(-60 -473.89 342.72)" width="100%" height="100%" xlink:href="#use4256"/>
+    <use transform="rotate(-60 -473.89 342.72)" width="100%" height="100%" xlink:href="#use4258"/>
+    <circle cx="-472.93" cy="341.52" r="18.188" fill="none" stroke="#fff" stroke-linejoin="round" stroke-width="12.286"/>
+   </g>
+  </g>
+ </g>
+</svg>

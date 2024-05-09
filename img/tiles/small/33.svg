@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="105.83mm" height="148.17mm" version="1.1" viewBox="0 0 105.83 148.17" xmlns="http://www.w3.org/2000/svg">
+ <g transform="translate(-134.66 -107.13)">
+  <rect x="134.66" y="107.13" width="105.83" height="148.17" fill="#f9f9f9"/>
+  <g transform="translate(60.512 520.55)">
+   <g transform="matrix(.59525 0 0 .59525 315.44 238.27)">
+    <path transform="translate(.066688 -1.3367)" d="m-357.05-1056.1c-12.641 0-22.926 10.287-22.926 22.928v128.35c0 12.641 10.285 22.926 22.926 22.926h81.049c12.641 0 22.926-10.285 22.926-22.926v-128.35c0-12.641-10.285-22.928-22.926-22.928zm0 7h81.049c8.8839 0 15.926 7.0439 15.926 15.928v128.35c0 8.8839-7.0419 15.926-15.926 15.926h-81.049c-8.8839 0-15.926-7.0419-15.926-15.926v-128.35c0-8.8839 7.0419-15.928 15.926-15.928z" color="#000000" color-rendering="auto" dominant-baseline="auto" fill="#002" image-rendering="auto" shape-rendering="auto" solid-color="#000000" style="font-feature-settings:normal;font-variant-alternates:normal;font-variant-caps:normal;font-variant-ligatures:normal;font-variant-numeric:normal;font-variant-position:normal;isolation:auto;mix-blend-mode:normal;shape-padding:0;text-decoration-color:#000000;text-decoration-line:none;text-decoration-style:solid;text-indent:0;text-orientation:mixed;text-transform:none;white-space:normal"/>
+    <rect transform="translate(.066688 -1.3367)" x="-362.23" y="-1040.1" width="91.414" height="142.09" ry="0" fill="none" stroke="#002" stroke-linecap="round" stroke-width="6.4521"/>
+    <g transform="translate(0 -4.4238)" fill="none" stroke="#002" stroke-linecap="round" stroke-width="6.3423">
+     <path d="m-290.96-1036.3a21.691 21.691 0 0 0 18.082 18.07v-18.07z"/>
+     <path d="m-341.96-1036.3a21.691 21.691 0 0 1-18.082 18.07v-18.07z"/>
+    </g>
+    <g transform="matrix(1 0 0 -1 0 -1936.5)" fill="none" stroke="#002" stroke-linecap="round" stroke-width="6.3423">
+     <path d="m-290.96-1036.3a21.691 21.691 0 0 0 18.082 18.07v-18.07z"/>
+     <path d="m-341.96-1036.3a21.691 21.691 0 0 1-18.082 18.07v-18.07z"/>
+    </g>
+   </g>
+  </g>
+ </g>
+</svg>

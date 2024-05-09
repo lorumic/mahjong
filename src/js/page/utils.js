@@ -12,7 +12,7 @@ function setStyleSheet(id, css) {
 
 class TileSetManager {
   static loadDefault() {
-    this.createTileSetCSS(`./img/tiles/default-tileset.png`).then((css) =>
+    this.createTileSetCSS(`./img/tiles/default-tileset.svg`).then((css) =>
       setStyleSheet(`default-tiles`, css)
     );
   }

@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="105.83mm" height="148.17mm" version="1.1" viewBox="0 0 105.83 148.17" xmlns="http://www.w3.org/2000/svg">
+ <g transform="translate(-97.61 -99.601)">
+  <rect x="97.61" y="99.601" width="105.83" height="148.17" fill="#f9f9f9"/>
+  <g transform="matrix(.26458 0 0 .26458 110.84 -51.839)">
+   <g fill="#002">
+    <circle cx="97.786" cy="718.12" r="61.118"/>
+    <circle cx="97.786" cy="808.12" r="61.118"/>
+    <circle cx="97.786" cy="896.62" r="61.118"/>
+    <circle cx="97.786" cy="986.62" r="61.118"/>
+    <circle cx="202.21" cy="718.12" r="61.118"/>
+    <circle cx="202.21" cy="808.12" r="61.118"/>
+    <circle cx="202.21" cy="896.62" r="61.118"/>
+    <circle cx="202.21" cy="986.62" r="61.118"/>
+   </g>
+   <circle cx="97.786" cy="718.12" r="46.095" fill="#fff"/>
+   <circle cx="97.786" cy="718.12" r="39.693" fill="#002"/>
+   <path transform="matrix(.99998 -.0068913 -.0068913 -.99998 0 0)" d="m114.38-718.78a21.548 21.548 0 0 1-21.143 21.544 21.548 21.548 0 0 1-21.938-20.734 21.548 21.548 0 0 1 20.318-22.324 21.548 21.548 0 0 1 22.702 19.894" fill="none" stroke="#fff" stroke-dasharray="13.5009, 13.5009" stroke-linecap="round" stroke-linejoin="round" stroke-width="6.7504"/>
+   <g>
+    <circle cx="97.786" cy="718.12" r="8.0316" fill="#fff"/>
+    <circle cx="97.786" cy="718.12" r="3.6676" fill="#000037"/>
+    <circle cx="97.786" cy="808.12" r="46.095" fill="#fff"/>
+    <circle cx="97.786" cy="808.12" r="39.693" fill="#002"/>
+   </g>
+   <path transform="matrix(.99998 -.0068913 -.0068913 -.99998 0 0)" d="m113.76-808.78a21.548 21.548 0 0 1-21.143 21.544 21.548 21.548 0 0 1-21.938-20.734 21.548 21.548 0 0 1 20.318-22.324 21.548 21.548 0 0 1 22.702 19.894" fill="none" stroke="#fff" stroke-dasharray="13.5009, 13.5009" stroke-linecap="round" stroke-linejoin="round" stroke-width="6.7504"/>
+   <g>
+    <circle cx="97.786" cy="808.12" r="8.0316" fill="#fff"/>
+    <circle cx="97.786" cy="808.12" r="3.6676" fill="#000037"/>
+    <circle cx="97.786" cy="896.62" r="46.095" fill="#fff"/>
+    <circle cx="97.786" cy="896.62" r="39.693" fill="#002"/>
+   </g>
+   <path transform="matrix(.99998 -.0068913 -.0068913 -.99998 0 0)" d="m113.15-897.27a21.548 21.548 0 0 1-21.143 21.544 21.548 21.548 0 0 1-21.938-20.734 21.548 21.548 0 0 1 20.318-22.324 21.548 21.548 0 0 1 22.702 19.894" fill="none" stroke="#fff" stroke-dasharray="13.5009, 13.5009" stroke-linecap="round" stroke-linejoin="round" stroke-width="6.7504"/>
+   <g>
+    <circle cx="97.786" cy="896.62" r="8.0316" fill="#fff"/>
+    <circle cx="97.786" cy="896.62" r="3.6676" fill="#000037"/>
+    <circle cx="97.786" cy="986.62" r="46.095" fill="#fff"/>
+    <circle cx="97.786" cy="986.62" r="39.693" fill="#002"/>
+   </g>
+   <path transform="matrix(.99998 -.0068913 -.0068913 -.99998 0 0)" d="m112.53-987.27a21.548 21.548 0 0 1-21.143 21.544 21.548 21.548 0 0 1-21.938-20.734 21.548 21.548 0 0 1 20.318-22.323 21.548 21.548 0 0 1 22.702 19.894" fill="none" stroke="#fff" stroke-dasharray="13.5009, 13.5009" stroke-linecap="round" stroke-linejoin="round" stroke-width="6.7504"/>
+   <g>
+    <circle cx="97.786" cy="986.62" r="8.0316" fill="#fff"/>
+    <circle cx="97.786" cy="986.62" r="3.6676" fill="#000037"/>
+    <circle cx="202.21" cy="718.12" r="46.095" fill="#fff"/>
+    <circle cx="202.21" cy="718.12" r="39.693" fill="#002"/>
+   </g>
+   <path transform="matrix(.99998 -.0068913 -.0068913 -.99998 0 0)" d="m218.81-719.5a21.548 21.548 0 0 1-21.143 21.544 21.548 21.548 0 0 1-21.938-20.734 21.548 21.548 0 0 1 20.318-22.324 21.548 21.548 0 0 1 22.702 19.894" fill="none" stroke="#fff" stroke-dasharray="13.5009, 13.5009" stroke-linecap="round" stroke-linejoin="round" stroke-width="6.7504"/>
+   <g>
+    <circle cx="202.21" cy="718.12" r="8.0316" fill="#fff"/>
+    <circle cx="202.21" cy="718.12" r="3.6676" fill="#000037"/>
+    <circle cx="202.21" cy="808.12" r="46.095" fill="#fff"/>
+    <circle cx="202.21" cy="808.12" r="39.693" fill="#002"/>
+   </g>
+   <path transform="matrix(.99998 -.0068913 -.0068913 -.99998 0 0)" d="m218.19-809.5a21.548 21.548 0 0 1-21.143 21.544 21.548 21.548 0 0 1-21.938-20.734 21.548 21.548 0 0 1 20.318-22.324 21.548 21.548 0 0 1 22.702 19.894" fill="none" stroke="#fff" stroke-dasharray="13.5009, 13.5009" stroke-linecap="round" stroke-linejoin="round" stroke-width="6.7504"/>
+   <g>
+    <circle cx="202.21" cy="808.12" r="8.0316" fill="#fff"/>
+    <circle cx="202.21" cy="808.12" r="3.6676" fill="#000037"/>
+    <circle cx="202.21" cy="896.62" r="46.095" fill="#fff"/>
+    <circle cx="202.21" cy="896.62" r="39.693" fill="#002"/>
+   </g>
+   <path transform="matrix(.99998 -.0068913 -.0068913 -.99998 0 0)" d="m217.58-897.99a21.548 21.548 0 0 1-21.143 21.544 21.548 21.548 0 0 1-21.938-20.734 21.548 21.548 0 0 1 20.318-22.324 21.548 21.548 0 0 1 22.702 19.894" fill="none" stroke="#fff" stroke-dasharray="13.5009, 13.5009" stroke-linecap="round" stroke-linejoin="round" stroke-width="6.7504"/>
+   <g>
+    <circle cx="202.21" cy="896.62" r="8.0316" fill="#fff"/>
+    <circle cx="202.21" cy="896.62" r="3.6676" fill="#000037"/>
+    <circle cx="202.21" cy="986.62" r="46.095" fill="#fff"/>
+    <circle cx="202.21" cy="986.62" r="39.693" fill="#002"/>
+   </g>
+   <path transform="matrix(.99998 -.0068913 -.0068913 -.99998 0 0)" d="m216.96-987.99a21.548 21.548 0 0 1-21.143 21.544 21.548 21.548 0 0 1-21.938-20.734 21.548 21.548 0 0 1 20.318-22.324 21.548 21.548 0 0 1 22.702 19.894" fill="none" stroke="#fff" stroke-dasharray="13.5009, 13.5009" stroke-linecap="round" stroke-linejoin="round" stroke-width="6.7504"/>
+   <circle cx="202.21" cy="986.62" r="8.0316" fill="#fff"/>
+   <circle cx="202.21" cy="986.62" r="3.6676" fill="#000037"/>
+  </g>
+ </g>
+</svg>

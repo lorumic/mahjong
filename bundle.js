@@ -2888,6 +2888,10 @@
           debug_only: true,
         },
         {
+          label: `Delay (in ms) to claim a discard`,
+          key: `claim_interval`,
+        },
+        {
           label: `Delay (in ms) between player turns`,
           key: `play_interval`,
         },

@@ -6796,7 +6796,7 @@
       this.removeAllListeners();
       resolve(this.currentTile);
       let serializedGame = JSON.parse(this.serialize(globalThis.currentGame));
-      serializedGame.game.discard = { values: { tile: this.currentTile.getTileFace() }};
+      serializedGame.game.discard = { values: { tile: this.currentTile.getTileFace(), from: 0 }};
       serializedGame.game.rules = JSON.parse(JSON.stringify(globalThis.currentGame.game.rules));
       // Set game discards
       serializedGame.game.discards = [];
@@ -8075,6 +8075,8 @@
           this.players[i].wind = lsPlayers[i].wind;
           this.players[i].windOfTheRound = lsPlayers[i].windOfTheRound;
           this.players[i]._score = lsPlayers[i]._score;
+          this.players[i].el.setAttribute("data-wincount", this.players[i].wincount);
+          this.players[i].el.setAttribute("data-score", this.players[i]._score);
           if (ui) {
             for (var j = 0; j < lsPlayers[i].bonus.length; j++) {
               var tile = new GameTile(lsPlayers[i].bonus[j]);
@@ -8089,25 +8091,28 @@
               ui.append(this.players[i].tiles[j]);
             }
           } else {
-            var parent = document.getElementById(i);
+            var el = this.players[i].el;
             for (var j = 0; j < lsPlayers[i].bonus.length; j++) {
               var tile = new GameTile(lsPlayers[i].bonus[j]);
               tile.bonus(j + 1);
-              parent.appendChild(tile);
+              el.appendChild(tile);
               publiclyVisible.push(lsPlayers[i].bonus[j]);
             }
             for (var j = 0; j < this.players[i].locked.length; j++) {
               for (var k = 0; k < this.players[i].locked[j].length; k++) {
                 var tile = new GameTile(null, this.players[i].locked[j][k].values);
                 tile.lock(j + 1);
-                parent.appendChild(tile);
+                el.appendChild(tile);
               }
             }
             for (var j = 0; j < this.players[i].tiles.length; j++) {
-              parent.appendChild(create(-1));
+              el.appendChild(create(-1));
             }
           }
           this.players[i].bonus = lsPlayers[i].bonus;
+        }
+        if (game.discards.length < 1) {
+          game.discard = new GameTile(null, game.discard);
         }
         // Render discards
         for (var i = 0; i < game.discards.length; i++) {

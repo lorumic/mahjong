@@ -2112,10 +2112,11 @@
   config.flushLog = playlog.flush;
 
   class GameTile extends HTMLElement {
-    constructor(tile) {
+    constructor(tile, values = null) {
       super();
-      tile = tile ?? this.getAttribute(`tile`) ?? -1;
-      this.values = { tile };
+      if (values) tile = values.tile
+      else tile = tile ?? this.getAttribute(`tile`) ?? -1;
+      this.values = values ? values : { tile };
       this.setAttribute(`tile`, this.values.tile);
       this.setAttribute(`title`, TILE_NAMES[tile]);
       this.setAttribute(`alt`, TILE_NAMES[tile]);
@@ -2229,9 +2230,9 @@
       this.removeAttribute(`locknum`);
     }
 
-    bonus() {
+    bonus(locknum = null) {
       this.setAttribute(`bonus`, true);
-      this.lock();
+      this.lock(locknum);
     }
     isBonus() {
       return this.values.bonus;
@@ -2776,6 +2777,9 @@
       row.classList.add(`spacer-1`);
       row.innerHTML = `
       <td>
+        <input id="reload" type="reset" value="Reload">
+      </td>
+      <td>
         <input id="reset" type="reset" value="Reset to default settings">
       </td>
       <td>
@@ -2796,7 +2800,10 @@
         });
         localStorage.setItem("mahjongConfig", JSON.stringify(mahjongConfig));
         updateCurrentConfig();
-        document.getElementById("okButton").click();
+        try {
+          document.getElementById("okButton").click();
+          document.getElementById("okButton").click();
+        } catch (_) {}
       });
 
       let ok = table.querySelector(`#ok`);
@@ -2806,7 +2813,15 @@
       reset.addEventListener("click", (evt) => {
         localStorage.setItem("mahjongConfig", JSON.stringify(DEFAULT_CONFIG));
         updateCurrentConfig();
-        document.getElementById("okButton").click();
+        try {
+          document.getElementById("okButton").click();
+          document.getElementById("okButton").click();
+        } catch (_) {}
+      });
+
+      let reload = table.querySelector(`#reload`);
+      reload.addEventListener("click", (evt) => {
+        location.reload();
       });
     }
 
@@ -2821,12 +2836,6 @@
         },
         {
           // basic boolean flags:
-        },
-        {
-          label: `🀄 Always show everyone's tiles`,
-          key: `force_open_bot_play`,
-          toggle: true,
-          disabled,
         },
         {
           label: `✨ Highlight claimable discards`,
@@ -2856,11 +2865,6 @@
           key: `pause_on_blur`,
           toggle: true,
           disabled,
-        },
-        {
-          label: `💻 Turn on debug mode`,
-          key: `debug`,
-          toggle: true,
         },
         {
           label: `❌ Pretend previous round was a draw`,
@@ -3625,7 +3629,7 @@
         }
 
         row.innerHTML = `
-        <td style="white-space: nowrap;" data-toggle="${key}" ${
+        <td colspan="2" style="white-space: nowrap;" data-toggle="${key}" ${
         toggle && !value ? `class="greyed"` : ``
       }>${label}</td>
         <td ${value != default_value ? ` class="custom"` : ``}>${field}</td>
@@ -3690,6 +3694,9 @@
           { object: document, evntName: "focus", handler: panel.gainFocus },
         ]);
         resolve();
+        try {
+          document.getElementById("okButton").click();
+        } catch (_) {}
       });
       panel.appendChild(ok);
 
@@ -3743,6 +3750,9 @@
      * Show all available settings for the game.
      */
     pickPlaySettings() {
+      try {
+        if (globalThis.currentGame.game.currentPlayerId > 0) return;
+      } catch (_) {}
       this.reveal();
       this.settings = new SettingsModal(this);
       this.settings.show();
@@ -3774,9 +3784,9 @@
    * received during the playing of a hand.
    */
   class TileTracker {
-    constructor(id) {
+    constructor(id, tiles = null) {
       this.id = id;
-      this.tiles = [];
+      this.tiles = tiles ? tiles : [];
       this.ui = false;
       this.reset();
     }
@@ -3899,6 +3909,8 @@
     handWillStart(redraw, resolve) {
       if (this.ui) this.ui.handWillStart(redraw, resolve);
       else resolve();
+      document.querySelectorAll(".winner").forEach(el => el.classList.remove("winner"));
+      document.querySelectorAll(".waiting").forEach(el => el.classList.remove("waiting"));
     }
 
     /**
@@ -3926,13 +3938,14 @@
      * Disclose this player's hand information.
      */
     getDisclosure() {
+      this.discards = this.discards.filter(t => t);
       return {
         // tile information
         concealed: this.getTileFaces().filter(v => v < 34),
         locked: this.locked,
         bonus: this.bonus,
         // play information,
-        discards: this.discards.map(t => t?t.getTileFace():t),
+        discards: this.discards.map(t => t.getTileFace?t.getTileFace():t),
         // player information
         wind: this.wind,
         winner: this.has_won,
@@ -4458,6 +4471,7 @@
     async getDiscard(tilesRemaining, resolve) {
       let resolveProxy = (discard) => {
         this.discards.push(discard);
+        this.game.discards.push(discard);
         resolve(discard);
       };
       return this.determineDiscard(tilesRemaining, resolveProxy);
@@ -4729,32 +4743,44 @@
    * have the opportunity to claim, whether or not to claim it.
    */
   class Personality {
-    constructor(player) {
+    constructor(player, personalityObj = null) {
       this.player = player;
 
-      // This determines whether or not we consider
-      // scoring an otherwise chicken hand, as long
-      // as it has something that scores points, like
-      // a pung of dragons, or own/wotr winds.
-      this.allowScoringChicken = true;
+      if (personalityObj) {
+        this.allowScoringChicken = personalityObj.allowScoringChicken;
+        this.cleanThreshold_low = personalityObj.cleanThreshold_low;
+        this.cleanThreshold_high = personalityObj.cleanThreshold_high;
+        this.playClean = personalityObj.playClean;
+        this.playChowHand = personalityObj.playChowHand;
+        this.chickenThreshold = personalityObj.chickenThreshold;
+        this.chicken = personalityObj.chicken;
+        this.basePanicThreshold = personalityObj.basePanicThreshold;
+        this.panicThreshold = personalityObj.panicThreshold;
+      } else {
+        // This determines whether or not we consider
+        // scoring an otherwise chicken hand, as long
+        // as it has something that scores points, like
+        // a pung of dragons, or own/wotr winds.
+        this.allowScoringChicken = true;
 
-      // How many of our tiles need to be of one suit
-      // before we decide to go for a clean hand?
-      this.cleanThreshold_low = 0.6;
-      this.cleanThreshold_high = 0.7;
-      this.playClean = false;
+        // How many of our tiles need to be of one suit
+        // before we decide to go for a clean hand?
+        this.cleanThreshold_low = 0.6;
+        this.cleanThreshold_high = 0.7;
+        this.playClean = false;
 
-      // Should we lock into a chow hand?
-      this.playChowHand = false;
+        // Should we lock into a chow hand?
+        this.playChowHand = false;
 
-      // probability of chickening at any check.
-      this.chickenThreshold = config.BOT_CHICKEN_THRESHOLD;
-      this.chicken = false;
+        // probability of chickening at any check.
+        this.chickenThreshold = config.BOT_CHICKEN_THRESHOLD;
+        this.chicken = false;
 
-      // For our panic threshold, we pick "4 turns"
-      // (out of a possible 18 "turns" in a hand).
-      this.basePanicThreshold = 16;
-      this.panicThreshold = this.basePanicThreshold;
+        // For our panic threshold, we pick "4 turns"
+        // (out of a possible 18 "turns" in a hand).
+        this.basePanicThreshold = 16;
+        this.panicThreshold = this.basePanicThreshold;
+      }
     }
 
     /**
@@ -5676,6 +5702,7 @@
 
       indicator.style.setProperty('--slide', offset + 'em');
 
+      if (!rules) rules = globalThis.currentGame.game.rules;
       // rotate counter clockwise if the rules say we should.
       if (rules.reverse_wind_direction) {
         winds.forEach(e => {
@@ -5736,6 +5763,7 @@
       this.gameBoard = document.querySelector(`.board`);
       if (config.PAUSE_ON_BLUR) {
         this.gameBoard.addEventListener(`blur`, async (evt) => {
+          if (!this.player.game) this.player.game = globalThis.currentGame.game;
           let resume = await this.player.game.pause();
 
           let handleResume = () => {
@@ -5816,7 +5844,7 @@
     reduceTracker(tileNumber) {
       if (tileNumber > 33) return; // don`t track bonus tiles explicitly
       let tile = this.knowledge.querySelector(`game-tile[tile='${tileNumber}']`);
-      tile.remove();
+      if (tile) tile.remove();
     }
 
     /**
@@ -5863,12 +5891,18 @@
      * giving them (milli)second accurate numbers.
      */
     startCountDown(ms) {
+      document.querySelector(".corner.settings").style.visibility = "hidden";
+      document.querySelector(".corner.theming").style.visibility = "hidden";
       new TaskTimer(
         timer => {
           this.countdownTimer = timer;
         },
         () => {
           this.countdownTimer = false;
+          if (globalThis.currentGame.game.currentPlayerId === 3) {
+            document.querySelector(".corner.settings").style.visibility = "visible";
+            document.querySelector(".corner.theming").style.visibility = "visible";
+          }
         },
         ms,
         (count) => {
@@ -5879,6 +5913,10 @@
             this.countdownTimer = false;
             if (this.claimCleanup) this.claimCleanup();
             this.claimCleanup = false;
+            if (globalThis.currentGame.game.currentPlayerId === 3) {
+              document.querySelector(".corner.settings").style.visibility = "visible";
+              document.querySelector(".corner.theming").style.visibility = "visible";
+            }
           }
         },
         10
@@ -5952,6 +5990,7 @@
      */
     removeLastDiscard() {
       if (this.discards.lastChild) {
+        this.player.game.discards.pop();
         this.discards.removeChild(this.discards.lastChild);
       }
     }
@@ -6020,6 +6059,7 @@
      * with the full game disclosure available in case of a win.
      */
     endOfHand(disclosure, force_reveal_player=false) {
+      this.player.game.discards = [];
       if (!disclosure) {
         playClip(`draw`);
         this.discards.classList.add(`exhausted`);
@@ -6702,7 +6742,17 @@
       let serializedGame = JSON.parse(this.serialize(globalThis.currentGame));
       serializedGame.game.discard = { values: { tile: this.currentTile.getTileFace() }};
       serializedGame.game.rules = JSON.parse(JSON.stringify(globalThis.currentGame.game.rules));
+      // Set game discards
+      serializedGame.game.discards = [];
+      for (let j = 0; j < globalThis.currentGame.game.discards.length; j++) {
+        serializedGame.game.discards.push({
+          values: globalThis.currentGame.game.discards[j].values
+        })
+      }
       for (let i = 0; i < globalThis.currentGame.players.length; i++) {
+        // Set latest
+        serializedGame.game.players[i].latest = { values: globalThis.currentGame.players[i].latest.values };
+        // Set player discards
         let playerDiscards = globalThis.currentGame.players[i].discards;
         serializedGame.game.players[i].discards = [];
         for (let j = 0; j < playerDiscards.length; j++) {
@@ -6710,8 +6760,17 @@
             values: playerDiscards[j].values
           })
         }
-      }
-      for (let i = 0; i < globalThis.currentGame.players.length; i++) {
+        // Set tiles
+        let playerTiles = globalThis.currentGame.players[i].tiles;
+        serializedGame.game.players[i].tiles = [];
+        for (let j = 0; j < playerTiles.length; j++) {
+          var values = playerTiles[j].values;
+          if (values.tile === serializedGame.game.discard.values.tile) continue;
+          serializedGame.game.players[i].tiles.push({
+            values: values
+          })
+        }
+        // Set locked
         let playerLocked = globalThis.currentGame.players[i].locked;
         serializedGame.game.players[i].locked = [];
         for (let j = 0; j < playerLocked.length; j++) {
@@ -6723,6 +6782,7 @@
           }
         }
       }
+      serializedGame.game.currentPlayerId = 1;
       localStorage.setItem("mahjongGame", JSON.stringify(serializedGame));
     }
 
@@ -7045,10 +7105,10 @@
    * "for free", and that's great!
    */
   class HumanPlayer extends BotPlayer {
-    constructor(id, chicken=false) {
+    constructor(id, chicken=false, withUi=true) {
       super(id, chicken);
       // humans need a UI to play mahjong.
-      this.ui = new ClientUI(this, this.tracker);
+      if (withUi) this.ui = new ClientUI(this, this.tracker);
     }
 
     /**
@@ -7128,9 +7188,14 @@
    * for dealing from during a hand of play.
    */
   class Wall {
-    constructor(players) {
+    constructor(players, wallObj = null) {
       this.players = players;
-      this.reset();
+      if (wallObj) {
+        this.dead = wallObj.dead;
+        this.deadSize = wallObj.deadSize;
+        this.remaining = wallObj.remaining;
+        this.tiles = wallObj.tiles;
+      } else this.reset();
     }
 
     // shuffle utility function, also used by WallHack
@@ -7182,12 +7247,28 @@
    * This class models an entire game.
    */
   class Game {
-    constructor(players) {
+    constructor(players, gameObj = null) {
       this.players = players;
-      this.wall = new Wall(players);
-      this.scoreHistory = [];
-      this._playLock = false;
-      this.GAME_START = false;
+      this.discards = gameObj ? gameObj.discards : [];
+      this.wall = gameObj ? gameObj.wall : new Wall(players);
+      this.scoreHistory = gameObj ? gameObj.scoreHistory : [];
+      this._playLock = gameObj ? gameObj._playLock : false;
+      this.GAME_START = gameObj ? gameObj.GAME_START : false;
+      if (gameObj) {
+        this.PLAY_START = gameObj.PLAY_START;
+        this.counter = gameObj.counter;
+        this.currentPlayerId = gameObj.currentPlayerId;
+        this.currentpid = gameObj.currentpid;
+        this.discard = gameObj.discard;
+        this.draws = gameObj.draws;
+        this.hand = gameObj.hand;
+        this.playDelay = gameObj.playDelay;
+        this.rules = gameObj.rules;
+        this.totalDraws = gameObj.totalDraws;
+        this.totalPlays = gameObj.totalPlays;
+        this.wind = gameObj.wind;
+        this.windOfTheRound = gameObj.windOfTheRound;
+      }
 
       // This gets redeclared by pause(), but we allocate
       // it here so that it exists as callable noop.
@@ -7197,29 +7278,33 @@
     /**
      * Start a game of mahjong!
      */
-    async startGame(whenDone) {
+    async startGame(whenDone, isResuming = false) {
       document.body.classList.remove(`finished`);
-      this.GAME_START = Date.now();
-      this.currentpid = 0;
-      this.wind = 0;
-      this.windOfTheRound = 0;
-      this.hand = 0;
-      this.draws = 0;
-      this.totalDraws = 0;
-      this.totalPlays = 0;
       this.finish = whenDone;
-      this.rules = Ruleset.getRuleset(config.RULES);
-
-      let players = this.players;
-
-      await players.asyncAll(p => p.gameWillStart(this, this.rules));
 
       this.fixValues = () => {
         // drop in term fixes (hand/draw/seed/wind/wotr) here.
       };
+      if (isResuming) {
+        this.play();
+      } else {
+        this.GAME_START = Date.now();
+        this.currentpid = 0;
+        this.wind = 0;
+        this.windOfTheRound = 0;
+        this.hand = 0;
+        this.draws = 0;
+        this.totalDraws = 0;
+        this.totalPlays = 0;
+        this.rules = Ruleset.getRuleset(config.RULES);
 
-      config.log(`starting game.`);
-      this.startHand();
+        let players = this.players;
+
+        await players.asyncAll(p => p.gameWillStart(this, this.rules));
+
+        config.log(`starting game.`);
+        this.startHand();
+      }
     }
 
     /**
@@ -7863,8 +7948,8 @@
      * Create a game, with document blur/focus event handling
      * bound to game pause/resume functionality.
      */
-    newGame() {
-      let game = new Game(this.players);
+    newGame(gameArg = null) {
+      let game = gameArg ? gameArg : new Game(this.players);
 
       globalThis.currentGame = {
         game: game,
@@ -7875,6 +7960,112 @@
       gameBoard.focus();
 
       return game;
+    }
+
+    createFromLocalStorage() {
+      let localStorageGame = JSON.parse(localStorage.getItem("mahjongGame"));
+      if (localStorageGame) {
+        var rules = localStorageGame.game.rules;
+        if ("faan_laak_table" in rules) {
+          Ruleset.register(Cantonese);
+          rules = new Cantonese();
+        } else {
+          Ruleset.register(ChineseClassical);
+          rules = new ChineseClassical();
+        }
+        var gameObj = localStorageGame.game;
+        this.players = [
+          new HumanPlayer(0, false, false),
+          new BotPlayer(1),
+          new BotPlayer(2),
+          new BotPlayer(3),
+        ];
+        gameObj.rules = rules;
+        gameObj.wall = new Wall(this.players, localStorageGame.game.wall);
+        var game = new Game(this.players, gameObj);
+        var lsPlayers = localStorageGame.game.players;
+        for (var i = 0; i < 4; i++) {
+          this.players[i].game = game;
+          this.players[i].chicken = lsPlayers[i].chicken;
+          this.players[i].discards = lsPlayers[i].discards;
+          this.players[i].draws = lsPlayers[i].draws;
+          this.players[i].el = document.getElementById(i);
+          this.players[i].has_won = lsPlayers[i].has_won;
+          this.players[i].lastClaim = lsPlayers[i].lastClaim;
+          this.players[i].latest = lsPlayers[i].latest;
+          for (var j = 0; j < lsPlayers[i].locked.length; j++) {
+            var tiles = lsPlayers[i].locked[j].map(t => new GameTile(null, t.values));
+            this.players[i].lockClaim(tiles);
+          }
+          this.players[i].personality = new Personality(this.players[i], lsPlayers[i].personality);
+          this.players[i].robbed = lsPlayers[i].robbed;
+          this.players[i].rules = rules;
+          this.players[i].selfdraw = lsPlayers[i].selfdraw;
+          for (var j = 0; j < lsPlayers[i].tiles.length; j++) {
+            this.players[i].append(new GameTile(null, lsPlayers[i].tiles[j].values));
+          }
+          this.players[i].tilesDead = lsPlayers[i].tilesDead;
+          this.players[i].tilesLeft = lsPlayers[i].tilesLeft;
+          this.players[i].waiting = lsPlayers[i].waiting;
+          this.players[i].wincount = lsPlayers[i].wincount;
+          this.players[i].wind = lsPlayers[i].wind;
+          this.players[i].windOfTheRound = lsPlayers[i].windOfTheRound;
+          this.players[i]._score = lsPlayers[i]._score;
+          var tileTracker = new TileTracker(i, lsPlayers[i].tracker.tiles);
+          var ui = i === 0 ? new ClientUI(this.players[i], tileTracker) : false;
+          tileTracker.setUI(ui);
+          this.players[i].tracker = tileTracker;
+          this.players[i].ui = ui;
+          if (ui) {
+            for (var j = 0; j < lsPlayers[i].bonus.length; j++) {
+              var tile = new GameTile(lsPlayers[i].bonus[j]);
+              tile.bonus(j + 1);
+              this.players[i].append(tile);
+            }
+            for (var j = 0; j < this.players[i].locked.length; j++) {
+              ui.lockClaim(this.players[i].locked[j]);
+            }
+            for (var j = 0; j < this.players[i].tiles.length; j++) {
+              ui.append(this.players[i].tiles[j]);
+            }
+          } else {
+            var parent = document.getElementById(i);
+            for (var j = 0; j < lsPlayers[i].bonus.length; j++) {
+              var tile = new GameTile(lsPlayers[i].bonus[j]);
+              tile.bonus(j + 1);
+              parent.appendChild(tile);
+            }
+            for (var j = 0; j < this.players[i].locked.length; j++) {
+              for (var k = 0; k < this.players[i].locked[j].length; k++) {
+                var tile = new GameTile(null, this.players[i].locked[j][k].values);
+                tile.lock(j + 1);
+                parent.appendChild(tile);
+              }
+            }
+            for (var j = 0; j < this.players[i].tiles.length; j++) {
+              parent.appendChild(create(-1));
+            }
+          }
+          this.players[i].bonus = lsPlayers[i].bonus;
+        }
+        // Render discards
+        for (var i = 0; i < game.discards.length; i++) {
+          let discard = create(game.discards[i].values.tile);
+          discard.mark(`discard`);
+          document.querySelector(`.discards`).appendChild(discard);
+          if (i === game.discards.length - 1) {
+            game.discard = discard;
+          }
+        }
+        rotateWinds(rules, game.wind, game.windOfTheRound, game.hand, game.draws);
+        if (document.querySelector(".countdown-bar") == null) {
+          var bar = document.createElement(`div`);
+          bar.classList.add(`countdown-bar`, "active");
+          document.querySelector(`.discards`).prepend(bar);
+          this.players[0].ui.bar = bar;
+        }
+        return this.newGame(game);
+      } else return this.newGame();
     }
   }
 
@@ -8034,13 +8225,26 @@
     // functions are always "hoisted" to above any
     // actual code, so the following lines work,
     // despite the functions being declared "later".
-    if (config.PLAY_IMMEDIATELY) play();
+    var existingGame = localStorage.getItem("mahjongGame");
+    if (existingGame) promptResume();
+    else if (config.PLAY_IMMEDIATELY) play();
     else offerChoice();
 
+    // Prompt resume existing game
+    function promptResume() {
+      modal.choiceInput("Resume previous game?", [
+        { label: `Sure`, value: `yes` },
+        { label: `No, take me to main menu`, value: `no` },
+      ], result => {
+        if (result === `yes`) play(true);
+        else offerChoice();
+      });
+    }
+
     // Forced bot play
-    function play() {
+    function play(resume = false) {
       let manager = new GameManager();
-      let game = manager.newGame();
+      let game = resume ? manager.createFromLocalStorage() : manager.newGame();
       game.startGame(() => {
         document.body.classList.add("finished");
         let gameui = game.players.find((p) => p.ui).ui;
@@ -8055,7 +8259,7 @@
             offerChoice();
           }
         );
-      });
+      }, resume);
     }
 
     // Optional bot play.

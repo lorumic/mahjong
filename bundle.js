@@ -1766,6 +1766,10 @@
     for (var key in globalThis.currentConfig) {
       config[key] = globalThis.currentConfig[key];
     }
+    var sidebar = document.querySelector(".sidebar");
+    if (sidebar) {
+      sidebar.classList.toggle("hidden", !config.SHOW_TILE_TRACKER);
+    }
   }
 
   const DEFAULT_CONFIG = {
@@ -1805,10 +1809,16 @@
     // player can claim them for something.
     SHOW_CLAIM_SUGGESTION: true,
 
+    // Auto-skip non-claimable discards
+    AUTO_SKIP_DISCARDS: true,
+
     // Work play suggestions as determined by
     // the bot that underpins the human player
     // into the game UI.
     SHOW_BOT_SUGGESTION: true,
+
+    // Show tile tracking panel
+    SHOW_TILE_TRACKER: true,
 
     // How likely are bots to go for chicken
     // hands, rather than for hands worth points?
@@ -2843,8 +2853,18 @@
           toggle: true,
         },
         {
+          label: `💬 Auto-skip non-claimable discards`,
+          key: `auto_skip_discards`,
+          toggle: true,
+        },
+        {
           label: `💬 Show bot play suggestions`,
           key: `show_bot_suggestion`,
+          toggle: true,
+        },
+        {
+          label: `💬 Show tile tracking panel`,
+          key: `show_tile_tracker`,
           toggle: true,
         },
         {
@@ -3249,6 +3269,10 @@
     }
 
     loadSidebar() {
+      var sidebar = document.querySelector(".sidebar");
+      if (sidebar) {
+        sidebar.classList.toggle("hidden", !config.SHOW_TILE_TRACKER);
+      }
       const dataURL = localStorage.getItem("mahjongSidebar");
       if (dataURL) {
         setStyleSheet(
@@ -6277,8 +6301,36 @@
       discard.setFrom(player.id);
       this.discards.appendChild(discard);
 
-      if (!config.BOT_PLAY && player.id !== this.id) {
+      let canClaim = false;
+      let suit = ((tile/9)|0);
+      let { lookout } = this.player.tilesNeeded();
+      let types = lookout[tile];
+
+      let mayChow = this.player.mayChow(player.id);
+      if (types) {
+        for(let type of types) {
+          if (CLAIM$1.CHOW <= type && type < CLAIM$1.PUNG && !mayChow) continue
+          canClaim = true;
+        }
+      }
+      
+      if (!canClaim && mayChow && tile < 27 && this.getSingleTileFromHand(tile)) {
+        let
+        n1 = tile < 26 && this.getSingleTileFromHand(tile+1), sn1 = (((tile+1)/9)|0),
+        n2 = tile < 25 && this.getSingleTileFromHand(tile+2), sn2 = (((tile+2)/9)|0),
+        p2 = tile > 1 && this.getSingleTileFromHand(tile-2), sp2 = (((tile-2)/9)|0),
+        p1 = tile > 0 && this.getSingleTileFromHand(tile-1), sp1 = (((tile-1)/9)|0),
+        c1 = n2 && n1 && sn2===suit && sn1===suit,
+        c2 = n1 && p1 && sn1===suit && sp1===suit,
+        c3 = p2 && p1 && sp2===suit && sp1===suit;
+        if (c1 || c2 || c3) canClaim = true;
+      }
+
+      if (!config.BOT_PLAY && (canClaim || !config.AUTO_SKIP_DISCARDS) && player.id !== this.id) {
         this.startCountDown(config.CLAIM_INTERVAL);
+      }
+      if (config.AUTO_SKIP_DISCARDS && player.id !== this.id && !canClaim) {
+        setTimeout(() => document.querySelector(".discards").click(), 500);
       }
 
       this.sortTiles(bank);

@@ -52,7 +52,7 @@ game-tile.latest {
 
 game-tile.selectable.highlight {
      box-shadow:
-     0px -5px 1px #aaaaaa,
+     0px -5px 1px var(--tile-highlight),
      0px -5px 1px rgba(16,16,16,1),
      0px -5px 1px rgba(16,16,16,1),
      0px -6px 2px #000000,

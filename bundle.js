@@ -6666,6 +6666,22 @@
       }, cancel);
     }
 
+    serialize(circularObj) {
+      let cache = [];
+      let result = JSON.stringify(circularObj, (key, value) => {
+        if (typeof value === 'object' && value !== null) {
+          // Duplicate reference found, discard key
+          if (cache.includes(value)) return;
+    
+          // Store value in our collection
+          cache.push(value);
+        }
+        return value;
+      });
+      cache = null;
+      return result;
+    }
+
     /**
      * Discard a selected tile from the player's hand
      */
@@ -6683,6 +6699,31 @@
       tiles.forEach(tile => tile.unmark('selectable','highlight','suggestion'));
       this.removeAllListeners();
       resolve(this.currentTile);
+      let serializedGame = JSON.parse(this.serialize(globalThis.currentGame));
+      serializedGame.game.discard = { values: { tile: this.currentTile.getTileFace() }};
+      serializedGame.game.rules = JSON.parse(JSON.stringify(globalThis.currentGame.game.rules));
+      for (let i = 0; i < globalThis.currentGame.players.length; i++) {
+        let playerDiscards = globalThis.currentGame.players[i].discards;
+        serializedGame.game.players[i].discards = [];
+        for (let j = 0; j < playerDiscards.length; j++) {
+          serializedGame.game.players[i].discards.push({
+            values: playerDiscards[j].values
+          })
+        }
+      }
+      for (let i = 0; i < globalThis.currentGame.players.length; i++) {
+        let playerLocked = globalThis.currentGame.players[i].locked;
+        serializedGame.game.players[i].locked = [];
+        for (let j = 0; j < playerLocked.length; j++) {
+          serializedGame.game.players[i].locked.push([]);
+          for (let k = 0; k < playerLocked[j].length; k++) {
+            serializedGame.game.players[i].locked[j].push({
+              values: playerLocked[j][k].values
+            })
+          }
+        }
+      }
+      localStorage.setItem("mahjongGame", JSON.stringify(serializedGame));
     }
 
     /**

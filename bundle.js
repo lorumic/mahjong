@@ -3822,8 +3822,10 @@
         console.trace();
         throw new Error('why is the tracker being given an HTML element?');
       }
-      this.tiles[tileNumber]--;
-      if (this.ui) this.ui.reduceTracker(tileNumber);
+      if (this.tiles[tileNumber] > 0) {
+        this.tiles[tileNumber]--;
+        if (this.ui) this.ui.reduceTracker(tileNumber);
+      }
     }
   }
 
@@ -6222,7 +6224,9 @@
      * Remove a tile from this player`s tile bank
      */
     remove(tile) {
-      this.el.removeChild(tile);
+      try {
+        this.el.removeChild(tile);
+      } catch(_) {}
     }
 
     /**
@@ -7984,6 +7988,7 @@
         gameObj.wall = new Wall(this.players, localStorageGame.game.wall);
         var game = new Game(this.players, gameObj);
         var lsPlayers = localStorageGame.game.players;
+        var publiclyVisible = [];
         for (var i = 0; i < 4; i++) {
           this.players[i].game = game;
           this.players[i].chicken = lsPlayers[i].chicken;
@@ -7993,9 +7998,16 @@
           this.players[i].has_won = lsPlayers[i].has_won;
           this.players[i].lastClaim = lsPlayers[i].lastClaim;
           this.players[i].latest = lsPlayers[i].latest;
+          var tileTracker = new TileTracker(i, lsPlayers[i].tracker.tiles);
+          var ui = i === 0 ? new ClientUI(this.players[i], tileTracker) : false;
+          tileTracker.setUI(ui);
+          if (ui) tileTracker.ui.resetTracker(tileTracker.tiles);
+          this.players[i].tracker = tileTracker;
+          this.players[i].ui = ui;
           for (var j = 0; j < lsPlayers[i].locked.length; j++) {
             var tiles = lsPlayers[i].locked[j].map(t => new GameTile(null, t.values));
             this.players[i].lockClaim(tiles);
+            lsPlayers[i].locked[j].forEach(t => publiclyVisible.push(t.values.tile));
           }
           this.players[i].personality = new Personality(this.players[i], lsPlayers[i].personality);
           this.players[i].robbed = lsPlayers[i].robbed;
@@ -8011,16 +8023,12 @@
           this.players[i].wind = lsPlayers[i].wind;
           this.players[i].windOfTheRound = lsPlayers[i].windOfTheRound;
           this.players[i]._score = lsPlayers[i]._score;
-          var tileTracker = new TileTracker(i, lsPlayers[i].tracker.tiles);
-          var ui = i === 0 ? new ClientUI(this.players[i], tileTracker) : false;
-          tileTracker.setUI(ui);
-          this.players[i].tracker = tileTracker;
-          this.players[i].ui = ui;
           if (ui) {
             for (var j = 0; j < lsPlayers[i].bonus.length; j++) {
               var tile = new GameTile(lsPlayers[i].bonus[j]);
               tile.bonus(j + 1);
               this.players[i].append(tile);
+              publiclyVisible.push(lsPlayers[i].bonus[j]);
             }
             for (var j = 0; j < this.players[i].locked.length; j++) {
               ui.lockClaim(this.players[i].locked[j]);
@@ -8034,6 +8042,7 @@
               var tile = new GameTile(lsPlayers[i].bonus[j]);
               tile.bonus(j + 1);
               parent.appendChild(tile);
+              publiclyVisible.push(lsPlayers[i].bonus[j]);
             }
             for (var j = 0; j < this.players[i].locked.length; j++) {
               for (var k = 0; k < this.players[i].locked[j].length; k++) {
@@ -8050,12 +8059,17 @@
         }
         // Render discards
         for (var i = 0; i < game.discards.length; i++) {
-          let discard = create(game.discards[i].values.tile);
+          let tile = game.discards[i].values.tile;
+          let discard = create(tile);
           discard.mark(`discard`);
           document.querySelector(`.discards`).appendChild(discard);
           if (i === game.discards.length - 1) {
             game.discard = discard;
           }
+          publiclyVisible.push(tile);
+        }
+        for (var i = 0; i < 4; i++) {
+          publiclyVisible.forEach(t => this.players[i].tracker.seen(t));
         }
         rotateWinds(rules, game.wind, game.windOfTheRound, game.hand, game.draws);
         if (document.querySelector(".countdown-bar") == null) {
@@ -8245,6 +8259,11 @@
     function play(resume = false) {
       let manager = new GameManager();
       let game = resume ? manager.createFromLocalStorage() : manager.newGame();
+      if (resume && !noSleepEnabled) {
+        var noSleep = new NoSleep();
+        noSleep.enable();
+        noSleepEnabled = true;
+      }
       game.startGame(() => {
         document.body.classList.add("finished");
         let gameui = game.players.find((p) => p.ui).ui;

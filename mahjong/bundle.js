@@ -7840,11 +7840,11 @@
             if (claim) return claim;
           }
         }
-        if (player.id === 0) {
-          document.querySelector(".corner.settings").style.visibility = "visible";
-          this.saveGameState();
-        }
       } while (revealed);
+      if (player.id === 0) {
+        document.querySelector(".corner.settings").style.visibility = "visible";
+        this.saveGameState();
+      }
     }
 
     /**

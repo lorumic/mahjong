@@ -8100,9 +8100,8 @@
           }
           this.players[i].bonus = lsPlayers[i].bonus;
         }
-        if (game.discards.length < 1) {
-          game.discard = new GameTile(null, game.discard);
-        }
+        game.discard = new GameTile(null, game.discard.values);
+        game.discards.push(game.discard);
         // Render discards
         for (var i = 0; i < game.discards.length; i++) {
           let tile = game.discards[i].values.tile;

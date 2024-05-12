@@ -44,9 +44,9 @@
   bottom: calc(var(--ph) * 2.2);
 }
 
-.board .corner.theming {
+/*.board .corner.theming {
   cursor: pointer;
   color: var(--board-secondary-text-color);
   right: 7.5rem;
   bottom: calc(var(--ph) * 2.2);
-}
+}*/

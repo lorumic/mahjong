@@ -541,8 +541,12 @@
    * if they already have a winning hand, how many interpretations
    * of the tiles involved there might be.
    */
-  function tilesNeeded(tiles, locked=[]) {
+  function tilesNeeded(tiles, locked=[], excludeTile = null) {
     // console.debug('tilesNeeded:', tiles, locked);
+    if (excludeTile !== null) {
+      let idx = tiles.findIndex(t => t === excludeTile);
+      if (idx >= 0) tiles.splice(idx, 1);
+    }
     let p = new Pattern(tiles);
 
     // Transform the "locked tiles" listing to
@@ -3718,6 +3722,7 @@
           { object: document, evntName: "focus", handler: panel.gainFocus },
         ]);
         resolve();
+        if (modalLabel === "Back to the scores") return;
         try {
           document.getElementById("okButton").click();
         } catch (_) {}
@@ -4158,8 +4163,8 @@
      * might be looking for, whether they're ready to win,
      * etc. based on Pattern expansion.
      */
-    tilesNeeded() {
-      return tilesNeeded(this.getTileFaces(), this.locked);
+    tilesNeeded(excludeTile = null) {
+      return tilesNeeded(this.getTileFaces(), this.locked, excludeTile);
     }
 
     /**
@@ -4496,6 +4501,10 @@
 
     async getDiscard(tilesRemaining, resolve) {
       let resolveProxy = (discard) => {
+        // when winning, discard will be undefined: let's set an early exit
+        if (!discard) return resolve(discard);
+        discard.values.from = this.id;
+        discard.setFrom(this.id);
         this.discards.push(discard);
         this.game.discards.push(discard);
         resolve(discard);
@@ -6754,22 +6763,6 @@
       }, cancel);
     }
 
-    serialize(circularObj) {
-      let cache = [];
-      let result = JSON.stringify(circularObj, (key, value) => {
-        if (typeof value === 'object' && value !== null) {
-          // Duplicate reference found, discard key
-          if (cache.includes(value)) return;
-    
-          // Store value in our collection
-          cache.push(value);
-        }
-        return value;
-      });
-      cache = null;
-      return result;
-    }
-
     /**
      * Discard a selected tile from the player's hand
      */
@@ -6787,51 +6780,6 @@
       tiles.forEach(tile => tile.unmark('selectable','highlight','suggestion'));
       this.removeAllListeners();
       resolve(this.currentTile);
-      let serializedGame = JSON.parse(this.serialize(globalThis.currentGame));
-      serializedGame.game.discard = { values: { tile: this.currentTile.getTileFace(), from: 0 }};
-      serializedGame.game.rules = JSON.parse(JSON.stringify(globalThis.currentGame.game.rules));
-      // Set game discards
-      serializedGame.game.discards = [];
-      for (let j = 0; j < globalThis.currentGame.game.discards.length; j++) {
-        serializedGame.game.discards.push({
-          values: globalThis.currentGame.game.discards[j].values
-        })
-      }
-      for (let i = 0; i < globalThis.currentGame.players.length; i++) {
-        // Set latest
-        serializedGame.game.players[i].latest = { values: globalThis.currentGame.players[i].latest.values };
-        // Set player discards
-        let playerDiscards = globalThis.currentGame.players[i].discards;
-        serializedGame.game.players[i].discards = [];
-        for (let j = 0; j < playerDiscards.length; j++) {
-          serializedGame.game.players[i].discards.push({
-            values: playerDiscards[j].values
-          })
-        }
-        // Set tiles
-        let playerTiles = globalThis.currentGame.players[i].tiles;
-        serializedGame.game.players[i].tiles = [];
-        for (let j = 0; j < playerTiles.length; j++) {
-          var values = playerTiles[j].values;
-          if (values.tile === serializedGame.game.discard.values.tile) continue;
-          serializedGame.game.players[i].tiles.push({
-            values: values
-          })
-        }
-        // Set locked
-        let playerLocked = globalThis.currentGame.players[i].locked;
-        serializedGame.game.players[i].locked = [];
-        for (let j = 0; j < playerLocked.length; j++) {
-          serializedGame.game.players[i].locked.push([]);
-          for (let k = 0; k < playerLocked[j].length; k++) {
-            serializedGame.game.players[i].locked[j].push({
-              values: playerLocked[j][k].values
-            })
-          }
-        }
-      }
-      serializedGame.game.currentPlayerId = 1;
-      localStorage.setItem("mahjongGame", JSON.stringify(serializedGame));
     }
 
     /**
@@ -7334,7 +7282,7 @@
         // drop in term fixes (hand/draw/seed/wind/wotr) here.
       };
       if (isResuming) {
-        this.play();
+        this.play(null, isResuming);
       } else {
         this.GAME_START = Date.now();
         this.currentpid = 0;
@@ -7576,6 +7524,73 @@
       }));
     }
 
+    serialize(circularObj) {
+      let cache = [];
+      let result = JSON.stringify(circularObj, (key, value) => {
+        if (typeof value === 'object' && value !== null) {
+          // Duplicate reference found, discard key
+          if (cache.includes(value)) return;
+    
+          // Store value in our collection
+          cache.push(value);
+        }
+        return value;
+      });
+      cache = null;
+      return result;
+    }
+
+    saveGameState() {
+      let serializedGame = JSON.parse(this.serialize(globalThis.currentGame));
+      try {
+        serializedGame.game.discard = { values: globalThis.currentGame.game.discard.values };
+      } catch (_) {
+        serializedGame.game.discard = undefined;
+      }
+      serializedGame.game.rules = JSON.parse(JSON.stringify(globalThis.currentGame.game.rules));
+      // Set game discards
+      serializedGame.game.discards = [];
+      for (let j = 0; j < globalThis.currentGame.game.discards.length; j++) {
+        serializedGame.game.discards.push({
+          values: globalThis.currentGame.game.discards[j].values
+        })
+      }
+      for (let i = 0; i < globalThis.currentGame.players.length; i++) {
+        // Set latest
+        serializedGame.game.players[i].latest = { values: globalThis.currentGame.players[i].latest.values };
+        // Set player discards
+        let playerDiscards = globalThis.currentGame.players[i].discards;
+        serializedGame.game.players[i].discards = [];
+        for (let j = 0; j < playerDiscards.length; j++) {
+          serializedGame.game.players[i].discards.push({
+            values: playerDiscards[j].values
+          })
+        }
+        // Set tiles
+        let playerTiles = globalThis.currentGame.players[i].tiles;
+        serializedGame.game.players[i].tiles = [];
+        for (let j = 0; j < playerTiles.length; j++) {
+          var values = playerTiles[j].values;
+          serializedGame.game.players[i].tiles.push({
+            values: values
+          })
+        }
+        // Set locked
+        let playerLocked = globalThis.currentGame.players[i].locked;
+        serializedGame.game.players[i].locked = [];
+        for (let j = 0; j < playerLocked.length; j++) {
+          serializedGame.game.players[i].locked.push([]);
+          for (let k = 0; k < playerLocked[j].length; k++) {
+            serializedGame.game.players[i].locked[j].push({
+              values: playerLocked[j][k].values
+            })
+          }
+        }
+      }
+      serializedGame.game.currentPlayerId = 0;
+      localStorage.setItem("mahjongGame", JSON.stringify(serializedGame));
+    }
+
     /**
      * Called as the last step in `preparePlay`, to give
      * players an opportunity to declare any hidden kongs
@@ -7659,8 +7674,16 @@
      * on whether or not players are witholding their discard,
      * or the wall has run out of tiles to deal from.
      */
-    async play(claim) {
+    async play(claim, resuming = false) {
       await this.continue("start of play()");
+
+      if (resuming) {
+        let localStorageGame = JSON.parse(localStorage.getItem("mahjongGame"));
+        let playerLatest = localStorageGame.game.players[0].latest.values.tile;
+        if (this.players[0].tilesNeeded(playerLatest).waiting) {
+          document.getElementById("0").classList.add("waiting");
+        }
+      }
 
       // Bootstrap this step of play
       let hand = this.hand;
@@ -7689,7 +7712,7 @@
         // a tile from the shuffled pile of tiles:
         discard = false;
         discardpid = false;
-        let claim = await this.dealTile(player);
+        let claim = await this.dealTile(player, resuming);
         if (claim) return this.processKongRob(claim);
       }
 
@@ -7791,11 +7814,11 @@
      * phase, this function simply gets a tile from the
      * wall, and then deals it to the indicated player.
      */
-    async dealTile(player) {
+    async dealTile(player, resuming = false) {
+      if (resuming) return;
       let wall = this.wall;
       let revealed = false;
       do {
-        if (player.id === 0) document.querySelector(".corner.settings").style.visibility = "visible";
         let tile = wall.get();
         let players = this.players;
 
@@ -7816,6 +7839,10 @@
             let claim = await this.processKong(player, kong);
             if (claim) return claim;
           }
+        }
+        if (player.id === 0) {
+          document.querySelector(".corner.settings").style.visibility = "visible";
+          this.saveGameState();
         }
       } while (revealed);
     }
@@ -8030,6 +8057,7 @@
         var game = new Game(this.players, gameObj);
         var lsPlayers = localStorageGame.game.players;
         var publiclyVisible = [];
+        var discardsBackup = JSON.parse(JSON.stringify(gameObj.discards));
         for (var i = 0; i < 4; i++) {
           this.players[i].game = game;
           this.players[i].chicken = lsPlayers[i].chicken;
@@ -8067,14 +8095,12 @@
           this.players[i].el.setAttribute("data-wincount", this.players[i].wincount);
           this.players[i].el.setAttribute("data-score", this.players[i]._score);
           if (ui) {
+            ui.markTilesLeft(gameObj.wall.remaining);
             for (var j = 0; j < lsPlayers[i].bonus.length; j++) {
               var tile = new GameTile(lsPlayers[i].bonus[j]);
               tile.bonus(j + 1);
               this.players[i].append(tile);
               publiclyVisible.push(lsPlayers[i].bonus[j]);
-            }
-            for (var j = 0; j < this.players[i].locked.length; j++) {
-              ui.lockClaim(this.players[i].locked[j]);
             }
             for (var j = 0; j < this.players[i].tiles.length; j++) {
               ui.append(this.players[i].tiles[j]);
@@ -8088,8 +8114,9 @@
               publiclyVisible.push(lsPlayers[i].bonus[j]);
             }
             for (var j = 0; j < this.players[i].locked.length; j++) {
-              for (var k = 0; k < this.players[i].locked[j].length; k++) {
-                var tile = new GameTile(null, this.players[i].locked[j][k].values);
+              var sortedLocked = JSON.parse(JSON.stringify(this.players[i].locked[j])).sort((a, b) => a.values.tile - b.values.tile);
+              for (var k = 0; k < sortedLocked.length; k++) {
+                var tile = new GameTile(null, sortedLocked[k].values);
                 tile.lock(j + 1);
                 el.appendChild(tile);
               }
@@ -8100,17 +8127,14 @@
           }
           this.players[i].bonus = lsPlayers[i].bonus;
         }
-        game.discard = new GameTile(null, game.discard.values);
-        game.discards.push(game.discard);
+        if (game.discard) game.discard = new GameTile(null, game.discard.values);
         // Render discards
+        game.discards = discardsBackup;
         for (var i = 0; i < game.discards.length; i++) {
           let tile = game.discards[i].values.tile;
           let discard = create(tile);
           discard.mark(`discard`);
           document.querySelector(`.discards`).appendChild(discard);
-          if (i === game.discards.length - 1) {
-            game.discard = discard;
-          }
           publiclyVisible.push(tile);
         }
         for (var i = 0; i < 4; i++) {
@@ -8190,7 +8214,6 @@
           align: "center",
         },
         { label: "Change settings", value: "settings", back: true },
-        { label: "Change theming", value: "theming", back: true },
         {
           description: "(you can also open the settings during play)",
           align: "center",

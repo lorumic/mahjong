@@ -5918,17 +5918,12 @@
      */
     startCountDown(ms) {
       document.querySelector(".corner.settings").style.visibility = "hidden";
-      //document.querySelector(".corner.theming").style.visibility = "hidden";
       new TaskTimer(
         timer => {
           this.countdownTimer = timer;
         },
         () => {
           this.countdownTimer = false;
-          if (globalThis.currentGame.game.currentPlayerId === 3) {
-            document.querySelector(".corner.settings").style.visibility = "visible";
-            //document.querySelector(".corner.theming").style.visibility = "visible";
-          }
         },
         ms,
         (count) => {
@@ -5939,10 +5934,6 @@
             this.countdownTimer = false;
             if (this.claimCleanup) this.claimCleanup();
             this.claimCleanup = false;
-            if (globalThis.currentGame.game.currentPlayerId === 3) {
-              document.querySelector(".corner.settings").style.visibility = "visible";
-              //document.querySelector(".corner.theming").style.visibility = "visible";
-            }
           }
         },
         10
@@ -6330,6 +6321,7 @@
         this.startCountDown(config.CLAIM_INTERVAL);
       }
       if (config.AUTO_SKIP_DISCARDS && player.id !== this.id && !canClaim) {
+        document.querySelector(".corner.settings").style.visibility = "hidden";
         setTimeout(() => document.querySelector(".discards").click(), 500);
       }
 
@@ -7630,6 +7622,7 @@
       // deal supplement tile(s) for as long as necessary
       let revealed = false;
       do {
+        if (player.id === 0) document.querySelector(".corner.settings").style.visibility = "visible";
         let tile = this.wall.get();
         config.log(`${player.id} <  ${tile} (supplement)`);
         revealed = player.append(tile);
@@ -7701,6 +7694,7 @@
       }
 
       else {
+        if (player.id === 0) document.querySelector(".corner.settings").style.visibility = "visible";
         // If this is claim call, then the player receives
         // the current discard instead of drawing a tile:
         config.log(`${player.id} <  ${discard.getTileFace()} (${claim.claimtype})`);
@@ -7801,6 +7795,7 @@
       let wall = this.wall;
       let revealed = false;
       do {
+        if (player.id === 0) document.querySelector(".corner.settings").style.visibility = "visible";
         let tile = wall.get();
         let players = this.players;
 

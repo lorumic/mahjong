@@ -5960,7 +5960,7 @@
       rotateWinds.reset();
       playClip(`start`);
       this.playerbanks.forEach(b => {
-        if (this.rules) b.dataset.score = this.rules.player_start_score;
+        if (this.rules) b.dataset.score = Game.getPaddedDataScore(this.rules.player_start_score);
         b.dataset.wins = 0;
       });
     }
@@ -6169,8 +6169,9 @@
     recordScores(scores) {
       scores.forEach((score, b) => {
         let d = this.playerbanks[b].dataset;
-        if (!d.score) d.score = 0;
-        d.score = parseInt(d.score) + score;
+        let scoreUnpadded = d.score.replace(/\D/g, '');
+        if (!scoreUnpadded) d.score = Game.getPaddedDataScore(0);
+        d.score = Game.getPaddedDataScore(parseInt(scoreUnpadded) + score);
       });
     }
 
@@ -7271,6 +7272,14 @@
       this.resume = () => {};
     }
 
+    static getPaddedDataScore(score) {
+      var scoreStr = score.toString();
+      var len = scoreStr.length;
+      if (len === 4) return scoreStr;
+      var pad = "‏‏‎ ‎".repeat(2*(4-len));
+      return pad + scoreStr;
+    }
+
     /**
      * Start a game of mahjong!
      */
@@ -7295,6 +7304,10 @@
         this.rules = Ruleset.getRuleset(config.RULES);
 
         let players = this.players;
+
+        for (var i = 0; i < 4; i++) {
+          document.getElementById(i).setAttribute("data-score", Game.getPaddedDataScore(this.rules.player_start_score));
+        }
 
         await players.asyncAll(p => p.gameWillStart(this, this.rules));
 
@@ -8093,7 +8106,7 @@
           this.players[i].windOfTheRound = lsPlayers[i].windOfTheRound;
           this.players[i]._score = lsPlayers[i]._score;
           this.players[i].el.setAttribute("data-wincount", this.players[i].wincount);
-          this.players[i].el.setAttribute("data-score", this.players[i]._score);
+          this.players[i].el.setAttribute("data-score", Game.getPaddedDataScore(this.players[i]._score));
           if (ui) {
             ui.markTilesLeft(gameObj.wall.remaining);
             for (var j = 0; j < lsPlayers[i].bonus.length; j++) {
@@ -8233,5 +8246,7 @@
       );
     }
   })();
-
+  for (var i = 0; i < 4; i++) {
+    document.getElementById(i).setAttribute("data-score", Game.getPaddedDataScore(""));
+  }
 })();

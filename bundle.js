@@ -3148,7 +3148,7 @@
 
   /*class TileSetManager {
     static loadDefault() {
-      this.createTileSetCSS(`../img/tiles/default-tileset.svg`).then((css) =>
+      this.createTileSetCSS(`img/tiles/default-tileset.svg`).then((css) =>
         setStyleSheet(`default-tiles`, css)
       );
     }
@@ -5665,7 +5665,7 @@
   // turn filenames into playable clips:
   const buildBin = (filename) => {
     let audio = document.createElement("audio");
-    audio.src = `../audio/${filename}`;
+    audio.src = `audio/${filename}`;
     audio.type = `mp3`;
     return audio;
   };
@@ -8183,7 +8183,7 @@
 
     // Prompt resume existing game
     function promptResume() {
-      if (!noSleep.enabled) noSleep.enable();
+      if (noSleep && !noSleep.enabled) noSleep.enable();
       modal.choiceInput("Resume previous game?", [
         { label: `Sure`, value: `yes` },
         { label: `No, take me to main menu`, value: `no` },
@@ -8195,7 +8195,7 @@
 
     // Forced bot play
     function play(resume = false) {
-      if (!noSleep.enabled) noSleep.enable();
+      if (noSleep && !noSleep.enabled) noSleep.enable();
       let manager = new GameManager();
       let game = resume ? manager.createFromLocalStorage() : manager.newGame();
       game.startGame(() => {
@@ -8217,7 +8217,7 @@
 
     // Optional bot play.
     function offerChoice() {
-      if (!noSleep.enabled) noSleep.enable();
+      if (noSleep && !noSleep.enabled) noSleep.enable();
       const options = [
         { description: "There are currently two modes of play on offer:" },
         { label: "I'd like to play some mahjong!", value: "play" },

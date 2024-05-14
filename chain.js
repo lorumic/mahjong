@@ -1,0 +1,1 @@
+var noSleep;function lb(){var bs=document.createElement("script");bs.type="text/javascript";bs.src="bundle.min.js";document.body.appendChild(bs)}try{var ns=document.createElement("script");ns.type="text/javascript";ns.src="../nosleep.js";ns.onload=lb;ns.onerror=lb;document.body.appendChild(ns)}catch(_){}

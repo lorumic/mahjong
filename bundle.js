@@ -3722,7 +3722,7 @@
           { object: document, evntName: "focus", handler: panel.gainFocus },
         ]);
         resolve();
-        if (modalLabel === "Back to the scores") return;
+        if (modalLabel === "Back to the scores" || modalLabel === "OK") return;
         try {
           document.getElementById("okButton").click();
         } catch (_) {}
@@ -6110,9 +6110,9 @@
 
         res.locked.forEach(s => {
           s.forEach(t => {
-            let n = create(t.getTileFace());
+            let n = create(t.getTileFace? t.getTileFace() : t.values.tile);
             n.lock(locknum);
-            if (t.isWinningTile()) n.winning();
+            if (t.isWinningTile? t.isWinningTile() : t.values.winning) n.winning();
             bank.appendChild(n);
           });
           locknum += s.length;
@@ -6169,9 +6169,9 @@
     recordScores(scores) {
       scores.forEach((score, b) => {
         let d = this.playerbanks[b].dataset;
-        let scoreUnpadded = d.score.replace(/\D/g, '');
+        let scoreUnpadded = d.score.replace(/[^0-9.]/g, '');
         if (!scoreUnpadded) d.score = Game.getPaddedDataScore(0);
-        d.score = Game.getPaddedDataScore(parseInt(scoreUnpadded) + score);
+        d.score = Game.getPaddedDataScore(parseFloat(scoreUnpadded) + score);
       });
     }
 
@@ -7273,11 +7273,11 @@
     }
 
     static getPaddedDataScore(score) {
-      var scoreStr = score.toString();
+      var scoreStr = `${score}`;
       var len = scoreStr.length;
-      if (len === 4) return scoreStr;
-      var pad = "‏‏‎ ‎".repeat(2*(4-len));
-      return pad + scoreStr;
+      if (len === 6) return scoreStr;
+      var pad = "‏‏‎ ‎".repeat(2*(6-len));
+      return `${pad}${scoreStr}`;
     }
 
     /**
@@ -7601,6 +7601,10 @@
         }
       }
       serializedGame.game.currentPlayerId = 0;
+      serializedGame.winds = [];
+      for (var i = 0; i < 4; i++) {
+        serializedGame.winds.push(Array.from(document.querySelector(".windicator").children[i].classList).filter(cl => cl !== "e" && cl !== "player-wind")[0]);
+      }
       localStorage.setItem("mahjongGame", JSON.stringify(serializedGame));
     }
 
@@ -8150,10 +8154,16 @@
           document.querySelector(`.discards`).appendChild(discard);
           publiclyVisible.push(tile);
         }
+        rotateWinds(rules, game.wind, game.windOfTheRound, game.hand, game.draws);
         for (var i = 0; i < 4; i++) {
           publiclyVisible.forEach(t => this.players[i].tracker.seen(t));
+          var handcount = document.querySelector(".hand-counter");
+          handcount.innerHTML = `round ${1+game.windOfTheRound}<br>hand ${game.hand}`;
+          if (game.draws) { handcount.innerHTML += `<br>rtr ${game.draws}`; }
+          var windEl = document.querySelector(".windicator").children[i];
+          windEl.classList.remove("lc", "tc", "rc", "bc");
+          windEl.classList.add(localStorageGame.winds[i]);
         }
-        rotateWinds(rules, game.wind, game.windOfTheRound, game.hand, game.draws);
         if (document.querySelector(".countdown-bar") == null) {
           var bar = document.createElement(`div`);
           bar.classList.add(`countdown-bar`, "active");

@@ -7040,7 +7040,7 @@
           if (!waiting) return;
           let need = lookout[tile];
           if (!need) return;
-          let reasons = need.filter(v => v.indexOf('32')!==0);
+          let reasons = need.filter(v => v.indexOf('32')===0);
           if (reasons.length === 0) return;
           claim = {
             from: pid,

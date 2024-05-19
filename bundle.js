@@ -1841,7 +1841,7 @@
     // allows players to lay claim to a discard.
     // Bots need nowhere near this much, but
     // humans tend to need more than a few ms!
-    CLAIM_INTERVAL: 5000,
+    CLAIM_INTERVAL: 50000,
 
     // The number of milliseconds between
     // players taking their turn.
